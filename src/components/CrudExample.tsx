@@ -47,7 +47,7 @@ export default function CrudExample() {
       const item = await repo.findOneBy({ id: editId });
       if (item) {
         item.name = text;
-        item.updatedAt = new Date();
+        item.updated_at = new Date();
         await repo.save(item);
       }
       setEditId(null);
@@ -55,8 +55,8 @@ export default function CrudExample() {
       // Create
       const newItem = repo.create({
         name: text,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
       });
       await repo.save(newItem);
     }
@@ -91,7 +91,7 @@ export default function CrudExample() {
       <Button
         title={editId !== null ? 'Update' : 'Add'}
         onPress={handleAddOrUpdate}
-        // disabled={!text.trim() || !dbReady}
+        disabled={!text.trim() || !dbReady}
       />
       <FlatList
         style={{ marginTop: 20 }}

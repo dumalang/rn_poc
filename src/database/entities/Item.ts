@@ -9,8 +9,8 @@ export class Item {
   name: string | undefined;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date | undefined;
+  created_at: Date | undefined;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAt: Date | undefined;
+  updated_at: Date | undefined;
 }
