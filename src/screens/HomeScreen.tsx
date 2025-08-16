@@ -1,15 +1,15 @@
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import CrudExample from '../components/CrudExample.tsx';
 
 const HomeScreen = ()=> {
   const isDarkMode = useColorScheme() === 'dark';
 
-  // @ts-ignore
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <CrudExample />
-    </View>
+    </SafeAreaView>
   );
 }
 
