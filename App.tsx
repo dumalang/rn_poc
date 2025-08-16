@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import React from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 // Navigation imports
