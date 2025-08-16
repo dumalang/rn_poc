@@ -9,7 +9,8 @@
     "start": "react-native start",
     "test": "jest",
     "ios-connected-device": "xcrun simctl list devices",
-    "android:open-dev-menu": "adb shell input keyevent 82"
+    "android:open-dev-menu": "adb shell input keyevent 82",
+    "android:show-logs": "npx react-native log-android"
   },
   "dependencies": {
     "@ionic-native/sqlite": "^5.36.0",
