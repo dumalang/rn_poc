@@ -91,7 +91,7 @@ export default function CrudExample() {
       <Button
         title={editId !== null ? 'Update' : 'Add'}
         onPress={handleAddOrUpdate}
-        disabled={!text.trim() || !dbReady}
+        disabled={!!!text.trim() || !!!dbReady}
       />
       <FlatList
         style={{ marginTop: 20 }}
