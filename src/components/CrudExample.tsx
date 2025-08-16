@@ -1,4 +1,4 @@
-import React, { JSX, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,56 +6,82 @@ import {
   Button,
   FlatList,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  Alert,
 } from "react-native";
+import { Item } from '../database/entities/Item';
+import { ensureDataSource } from '../database/AppDataSource';
 
-interface Item {
-  id: number;
-  name: string;
-}
-
-export default function CrudExample(): JSX.Element {
+export default function CrudExample() {
   const [items, setItems] = useState<Item[]>([]);
-  const [text, setText] = useState<string>("");
+  const [text, setText] = useState<string>('');
   const [editId, setEditId] = useState<number | null>(null);
+  const [dbReady, setDbReady] = useState(false);
 
-  const handleAddOrUpdate = () => {
-    if (text.trim() === "") return;
+  useEffect(() => {
+    (async () => {
+      try {
+        await ensureDataSource();
+        setDbReady(true);
+        await fetchItems();
+      } catch (e: any) {
+        Alert.alert('DB Error', e?.message || String(e));
+      }
+    })();
+  }, []);
+
+  const fetchItems = async () => {
+    const ds = await ensureDataSource();
+    const repo = ds.getRepository(Item);
+    const all = await repo.find({ order: { id: 'DESC' } });
+    setItems(all);
+  };
+
+  const handleAddOrUpdate = async () => {
+    if (!text.trim()) return;
+    const ds = await ensureDataSource();
+    const repo = ds.getRepository(Item);
 
     if (editId !== null) {
       // Update
-      setItems(prevItems =>
-        prevItems.map(item =>
-          item.id === editId ? { ...item, name: text } : item
-        )
-      );
+      const item = await repo.findOneBy({ id: editId });
+      if (item) {
+        item.name = text;
+        item.updatedAt = new Date();
+        await repo.save(item);
+      }
       setEditId(null);
     } else {
       // Create
-      setItems(prevItems => [
-        ...prevItems,
-        { id: Date.now(), name: text }
-      ]);
+      const newItem = repo.create({
+        name: text,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await repo.save(newItem);
     }
-    setText("");
+    setText('');
+    await fetchItems();
   };
 
   const handleEdit = (id: number) => {
     const item = items.find(i => i.id === id);
     if (item) {
-      setText(item.name);
+      setText(item.name || '');
       setEditId(id);
     }
   };
 
-  const handleDelete = (id: number) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== id));
+  const handleDelete = async (id: number) => {
+    const ds = await ensureDataSource();
+    const repo = ds.getRepository(Item);
+    await repo.delete(id);
+    await fetchItems();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Simple CRUD (TypeScript)</Text>
-
+      <Text style={styles.heading}>Simple CRUD (TypeORM)</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter item name"
@@ -63,22 +89,22 @@ export default function CrudExample(): JSX.Element {
         onChangeText={setText}
       />
       <Button
-        title={editId !== null ? "Update" : "Add"}
+        title={editId !== null ? 'Update' : 'Add'}
         onPress={handleAddOrUpdate}
+        // disabled={!text.trim() || !dbReady}
       />
-
       <FlatList
         style={{ marginTop: 20 }}
         data={items}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item?.id?.toString() || Date.now().toString()}
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Text>{item.name}</Text>
             <View style={styles.actions}>
-              <TouchableOpacity onPress={() => handleEdit(item.id)}>
+              <TouchableOpacity onPress={() => handleEdit(item.id || 0)}>
                 <Text style={styles.edit}>Edit</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <TouchableOpacity onPress={() => handleDelete(item.id || 0)}>
                 <Text style={styles.delete}>Delete</Text>
               </TouchableOpacity>
             </View>
